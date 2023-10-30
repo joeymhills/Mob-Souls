@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class ThirdPersonMovement : MonoBehaviour
@@ -29,7 +30,33 @@ public class ThirdPersonMovement : MonoBehaviour
         bool runPressed = Input.GetKey(KeyCode.LeftShift);
 
         //if player is pressing a move key, sets walking to true
-        if (!isWalking && (movePressed && !runPressed)) 
+
+
+
+
+        // Camera Settings
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
+
+        if (direction.magnitude >= 0.1f) { 
+            
+            float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg + cam.eulerAngles.y;
+            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+            transform.rotation = Quaternion.Euler(0f, angle, 0f);
+
+            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
+            controller.Move(moveDir.normalized * speed * Time.deltaTime);
+        }
+
+        if (animator.GetBool("attack1") == true)
+        {
+
+            animator.SetBool("isWalking", false);
+            animator.SetBool("isRunning", false);
+
+        }
+        if (!isWalking && (movePressed && !runPressed))
         {
 
             animator.SetBool("isWalking", true);
@@ -84,22 +111,5 @@ public class ThirdPersonMovement : MonoBehaviour
             print(isWalking);
 
         }
-
-
-
-        // Camera Settings
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
-        Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
-
-        if (direction.magnitude >= 0.1f) { 
-            
-            float targetAngle = Mathf.Atan2(direction.x, direction.y) * Mathf.Rad2Deg + cam.eulerAngles.y;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-
-            Vector3 moveDir = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            controller.Move(moveDir.normalized * speed * Time.deltaTime);
-        }
-} 
+    } 
 }
